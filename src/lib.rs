@@ -35,17 +35,27 @@ impl Universe {
         return (row * self.width + col) as usize;
     }
 
+    #[allow(unused_comparisons)]
     fn live_neighbor_count(&self, row: u32, column: u32) -> u8 {
         let mut count = 0;
-        for delta_row in [self.height - 1, 0, 1].iter().cloned() {
-            for delta_col in [self.width - 1, 0, 1].iter().cloned() {
-                if delta_row == 0 && delta_col == 0 {
+        for delta_row in [row - 1, row, row + 1].iter().cloned() {
+            for delta_col in [column - 1, column, column + 1].iter().cloned() {
+                // if we are looking at ourselves
+                if delta_row == row && delta_col == column {
+                    continue;
+                }
+                // if we are out of bounds (eg: the edges)
+                let out_of_bounds =
+                    delta_col >= self.width ||
+                    delta_col < 0 ||
+                    delta_row >= self.height ||
+                    delta_row < 0;
+
+                if out_of_bounds {
                     continue;
                 }
 
-                let neighbor_row = (row + delta_row) % self.height;
-                let neighbor_col = (column + delta_col) % self.width;
-                let idx = self.get_index(neighbor_row, neighbor_col);
+                let idx = self.get_index(delta_row, delta_col);
                 count += self.cells.contains(idx) as u8;
             }
         }

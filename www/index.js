@@ -60,8 +60,7 @@ function drawCells() {
 function renderLoop() {
     drawCells();
     universe.tick();
-    requestAnimationFrame(renderLoop);
-  };
-  
+    requestAnimationFrame(renderLoop)
+};
 
-requestAnimationFrame(renderLoop);
+requestAnimationFrame(renderLoop)
