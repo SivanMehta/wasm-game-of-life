@@ -117,11 +117,18 @@ impl Universe {
 
     pub fn toggle_cell(&mut self, row: u32, col: u32) {
         let index = self.get_index(row, col);
+        println!("{}, {}, {}", row, col, index);
         self.cells.toggle(index);
     }
 
     pub fn render(&self) -> String {
         self.to_string()
+    }
+
+    pub fn clear(&mut self) {
+        let capacity = (self.width() * self.width()) as usize;
+        // set everything to 0
+        self.cells = FixedBitSet::with_capacity(capacity);
     }
 }
 

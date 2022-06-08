@@ -2,8 +2,8 @@ import { Universe } from "hello-wasm-pack";
 // Import the WebAssembly memory at the top of the file.
 import { memory } from "hello-wasm-pack/hello_wasm_pack_bg";
 
-const SIZE = 64;
-const CELL_SIZE = 10; // px
+const SIZE = 96;
+const CELL_SIZE = 8; // px
 const DEAD_COLOR = "#FFFFFF";
 const ALIVE_COLOR = "#000000";
 const GRID_COLOR = '#CCCCCC';
@@ -16,8 +16,8 @@ const height = universe.height();
 // Give the canvas room for all of our cells and a 1px border
 // around each of them.
 const canvas = document.getElementById("canvas");
-canvas.height = (CELL_SIZE + 1) * height + 1;
-canvas.width = (CELL_SIZE + 1) * width + 1;
+canvas.height = (CELL_SIZE) * height + 1;
+canvas.width = (CELL_SIZE) * width + 1;
 
 const ctx = canvas.getContext('2d');
 
@@ -27,14 +27,14 @@ function drawGrid() {
   
     // Vertical lines.
     for (let i = 0; i <= width; i++) {
-      ctx.moveTo(i * (CELL_SIZE + 1) + 1, 0);
-      ctx.lineTo(i * (CELL_SIZE + 1) + 1, (CELL_SIZE + 1) * height + 1);
+      ctx.moveTo(i * (CELL_SIZE) + 1, 0);
+      ctx.lineTo(i * (CELL_SIZE) + 1, (CELL_SIZE) * height + 1);
     }
   
     // Horizontal lines.
     for (let j = 0; j <= height; j++) {
-      ctx.moveTo(0,                           j * (CELL_SIZE + 1) + 1);
-      ctx.lineTo((CELL_SIZE + 1) * width + 1, j * (CELL_SIZE + 1) + 1);
+      ctx.moveTo(0,                           j * (CELL_SIZE) + 1);
+      ctx.lineTo((CELL_SIZE) * width + 1, j * (CELL_SIZE) + 1);
     }
   
     ctx.stroke();
@@ -66,10 +66,10 @@ function drawCells() {
             : DEAD_COLOR;
 
         ctx.fillRect(
-            col * (CELL_SIZE + 1) + 1,
-            row * (CELL_SIZE + 1) + 1,
-            CELL_SIZE,
-            CELL_SIZE
+            col * (CELL_SIZE) + 1,
+            row * (CELL_SIZE) + 1,
+            CELL_SIZE - 1,
+            CELL_SIZE - 1
         );
         }
     }
@@ -78,7 +78,6 @@ function drawCells() {
 };
 
 let animationId;
-const playPauseButton = document.getElementById('play-pause');
 
 function playing() {
     return animationId !== null;
@@ -90,19 +89,27 @@ function play() {
 }
 
 function pause() {
+    drawCells();
     cancelAnimationFrame(animationId);
     playPauseButton.textContent = "Play";
     animationId = null;
 }
 
-playPauseButton.addEventListener('click', () => {
+const playPauseButton = document.getElementById('play-pause');
+playPauseButton.onclick = function () {
     // cancel animation events to "pause"
     if (playing()) {
         pause();
     } else {
         play();
     }
-});
+};
+
+const clearButton = document.getElementById('clear');
+clearButton.onclick = function () {
+    universe.clear();
+    pause();
+}
 
 function renderLoop() {
     drawCells();
@@ -111,7 +118,6 @@ function renderLoop() {
 };
 
 canvas.addEventListener('click', event => {
-    if(playing()) return;
     const boundingRect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / boundingRect.width;
     const scaleY = canvas.height / boundingRect.height;
@@ -119,10 +125,9 @@ canvas.addEventListener('click', event => {
     const canvasLeft = (event.clientX - boundingRect.left) * scaleX;
     const canvasTop = (event.clientY - boundingRect.top) * scaleY;
 
-    const row = Math.floor(canvasTop / CELL_SIZE);
-    const col = Math.floor(canvasLeft / CELL_SIZE);
+    const row = Math.floor(canvasTop / (CELL_SIZE));
+    const col = Math.floor(canvasLeft / (CELL_SIZE));
     
-    console.log(row, col);
     universe.toggle_cell(row, col);
     drawCells();
 })
