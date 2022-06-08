@@ -111,6 +111,13 @@ clearButton.onclick = function () {
     pause();
 }
 
+const resetButton = document.getElementById('reset');
+resetButton.onclick = function () {
+    pause();
+    universe.reset();
+    play();
+}
+
 function renderLoop() {
     drawCells();
     universe.tick();

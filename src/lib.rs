@@ -125,10 +125,25 @@ impl Universe {
         self.to_string()
     }
 
-    pub fn clear(&mut self) {
+    fn generate_cells(&mut self, generator: fn(usize) -> bool) {
         let capacity = (self.width() * self.width()) as usize;
-        // set everything to 0
-        self.cells = FixedBitSet::with_capacity(capacity);
+        let mut new_cells = FixedBitSet::with_capacity(capacity);
+        for bit in 0..capacity {
+            let value = generator(bit);
+            new_cells.set(bit, value)
+        }
+
+        self.cells = new_cells;
+    }
+
+    pub fn clear(&mut self) {
+        fn generator(_: usize) -> bool { return false; }
+        self.generate_cells(generator)
+    }
+
+    pub fn reset(&mut self) {
+        fn generator(_: usize) -> bool { return js_sys::Math::random() < 0.5 }
+        self.generate_cells(generator);
     }
 }
 
