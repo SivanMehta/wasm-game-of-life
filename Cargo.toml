@@ -33,6 +33,9 @@ wee_alloc = { version = "0.4.5", optional = true }
 # used for accessing native JS libraries, for example Math.random()
 js-sys = "0.3.57"
 
+# used for slimming down memory footprint of cells
+fixedbitset = "0.4.1"
+
 [dev-dependencies]
 wasm-bindgen-test = "0.3.13"
 

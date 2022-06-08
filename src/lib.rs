@@ -1,6 +1,7 @@
 mod utils;
 
 use wasm_bindgen::prelude::*;
+use fixedbitset::FixedBitSet;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
@@ -9,18 +10,10 @@ use wasm_bindgen::prelude::*;
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[wasm_bindgen]
-#[repr(u8)]
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Cell {
-    Dead = 0,
-    Alive = 1
-}
-
-#[wasm_bindgen]
 pub struct Universe {
     width: u32, // 32 bits
     height: u32, // 32 bits
-    cells: Vec<Cell> // a vector of cells
+    cells: FixedBitSet // a vector of cells
 }
 
 #[wasm_bindgen]
@@ -33,13 +26,13 @@ impl Universe {
         return self.height;
     }
 
-    pub fn cells(&self) -> *const Cell {
-        return self.cells.as_ptr();
+    pub fn cells(&self) -> *const u32 {
+        return self.cells.as_slice().as_ptr();
     }
 
     // translate a given row and column into an index
     fn get_index(&self, row: u32, col: u32) -> usize {
-        return (row * self.width + col) as usize
+        return (row * self.width + col) as usize;
     }
 
     fn live_neighbor_count(&self, row: u32, column: u32) -> u8 {
@@ -53,10 +46,10 @@ impl Universe {
                 let neighbor_row = (row + delta_row) % self.height;
                 let neighbor_col = (column + delta_col) % self.width;
                 let idx = self.get_index(neighbor_row, neighbor_col);
-                count += self.cells[idx] as u8;
+                count += self.cells.contains(idx) as u8;
             }
         }
-        count
+        return count;
     }
 
     pub fn tick(&mut self) {
@@ -65,26 +58,26 @@ impl Universe {
         for row in 0..self.height {
             for col in 0 ..self.width  {
                 let index = self.get_index(row, col);
-                let cell = self.cells[index];
+                let cell = self.cells.contains(index);
                 let neighbors = self.live_neighbor_count(row, col);
                 let next_cell = match(cell, neighbors) {
                     // any live cell with fewer than 2 neighbors dies (underpopulation)
-                    (Cell::Alive, x) if x < 2 => Cell::Dead,
+                    (true, x) if x < 2 => false,
         
                     // any live cell with two or three live neighbors lives on
-                    (Cell::Alive, 2) | (Cell::Alive, 3) => Cell::Alive,
+                    (true, 2) | (true, 3) => true,
         
                     // any live cell with more than three neighbors dies (overpopulation)
-                    (Cell::Alive, x) if x > 3 => Cell::Dead,
+                    (true, x) if x > 3 => false,
         
                     // any blank cell with 3 live neighbors lives (creation of life)
-                    (Cell::Dead, 3) => Cell::Alive,
+                    (false, 3) => true,
         
                     // otherwise
                     (otherwise, _) => otherwise,
                 };
         
-                next[index] = next_cell;
+                next.set(index, next_cell);
             }
         }
 
@@ -95,15 +88,13 @@ impl Universe {
         let width = size;
         let height = size;
 
-        let cells = (0..width * height)
-            .map(|_| {
-                if js_sys::Math::random() < 0.5 {
-                    return Cell::Alive
-                } else {
-                    return Cell::Dead
-                }
-            })
-            .collect();
+        let capacity = (size * size) as usize;
+        let mut cells = FixedBitSet::with_capacity(capacity);
+
+        for bit in 0..capacity {
+            let value = js_sys::Math::random() < 0.5;
+            cells.set(bit, value)
+        }
         
         let creation = Universe {
             width,
@@ -124,15 +115,15 @@ use std::fmt;
 // affords a to_string method
 impl fmt::Display for Universe {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        // as_slice.chunks will essentially allow us to write this as a nessted loop
-        for line in self.cells.as_slice().chunks(self.width as usize) {
-            for &cell in line {
-                let symbol = if cell == Cell::Dead { '◻' } else { '◼' };
-                write!(f, "{}", symbol)?;
+        // as_slice.chunks will essentially allow us to write this as a nested loop
+        for bit in 0..self.cells.len() {
+            let symbol = if self.cells.contains(bit) { '◼' } else { '◻' };
+            write!(f, "{}", symbol)?;
+            if (bit as u32) % self.width == 0 {
+                write!(f, "\n")?;
             }
-            write!(f, "\n")?;
-        }
 
+        }
         Ok(())
     }
 }
