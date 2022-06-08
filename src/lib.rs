@@ -115,6 +115,11 @@ impl Universe {
         return creation;
     }
 
+    pub fn toggle_cell(&mut self, row: u32, col: u32) {
+        let index = self.get_index(row, col);
+        self.cells.toggle(index);
+    }
+
     pub fn render(&self) -> String {
         self.to_string()
     }

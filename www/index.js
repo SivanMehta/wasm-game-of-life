@@ -2,8 +2,8 @@ import { Universe } from "hello-wasm-pack";
 // Import the WebAssembly memory at the top of the file.
 import { memory } from "hello-wasm-pack/hello_wasm_pack_bg";
 
-const SIZE = 96;
-const CELL_SIZE = 5; // px
+const SIZE = 64;
+const CELL_SIZE = 10; // px
 const DEAD_COLOR = "#FFFFFF";
 const ALIVE_COLOR = "#000000";
 const GRID_COLOR = '#CCCCCC';
@@ -80,6 +80,10 @@ function drawCells() {
 let animationId;
 const playPauseButton = document.getElementById('play-pause');
 
+function playing() {
+    return animationId !== null;
+}
+
 function play() {
     animationId = requestAnimationFrame(renderLoop);
     playPauseButton.textContent = "Pause";
@@ -93,18 +97,35 @@ function pause() {
 
 playPauseButton.addEventListener('click', () => {
     // cancel animation events to "pause"
-    if (animationId) {
+    if (playing()) {
         pause();
     } else {
         play();
     }
-})
+});
 
 function renderLoop() {
     drawCells();
     universe.tick();
     animationId = requestAnimationFrame(renderLoop)
 };
+
+canvas.addEventListener('click', event => {
+    if(playing()) return;
+    const boundingRect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / boundingRect.width;
+    const scaleY = canvas.height / boundingRect.height;
+
+    const canvasLeft = (event.clientX - boundingRect.left) * scaleX;
+    const canvasTop = (event.clientY - boundingRect.top) * scaleY;
+
+    const row = Math.floor(canvasTop / CELL_SIZE);
+    const col = Math.floor(canvasLeft / CELL_SIZE);
+    
+    console.log(row, col);
+    universe.toggle_cell(row, col);
+    drawCells();
+})
 
 drawGrid();
 play();
