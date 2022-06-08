@@ -2,7 +2,7 @@ import { Universe, Cell } from "hello-wasm-pack";
 // Import the WebAssembly memory at the top of the file.
 import { memory } from "hello-wasm-pack/hello_wasm_pack_bg";
 
-const SIZE = 64;
+const SIZE = 80;
 const CELL_SIZE = 10; // px
 const DEAD_COLOR = "#FFFFFF";
 const ALIVE_COLOR = "#000000";

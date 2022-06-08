@@ -14,6 +14,7 @@ crate-type = ["cdylib", "rlib"]
 default = ["console_error_panic_hook"]
 
 [dependencies]
+# used for exposing functions to js via web assembly
 wasm-bindgen = "0.2.63"
 
 # The `console_error_panic_hook` crate provides better debugging of panics by
@@ -28,6 +29,9 @@ console_error_panic_hook = { version = "0.1.6", optional = true }
 #
 # Unfortunately, `wee_alloc` requires nightly Rust when targeting wasm for now.
 wee_alloc = { version = "0.4.5", optional = true }
+
+# used for accessing native JS libraries, for example Math.random()
+js-sys = "0.3.57"
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.13"
