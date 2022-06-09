@@ -51,10 +51,6 @@ impl FPS {
         return self.enough;
     }
 
-    pub fn wat(&self) -> i8 {
-        return 3;
-    }
-
     pub fn render(&mut self) -> Output {
         let now = now();
         let delta = (now - self.last_frame_time_stamp) as f64;
@@ -64,6 +60,9 @@ impl FPS {
         // save only the last 100 timings
         self.frames[self.current_frame] = fps;
         self.current_frame = (self.current_frame + 1) % 100;
+        if self.current_frame == 99 {
+            self.enough = true;
+        }
 
         let mut min = 9999.9;
         let mut max = 0.0;
@@ -76,6 +75,10 @@ impl FPS {
         }
 
         let avg = sum / 100.0;
-        return Output { min, avg, max };
+        return Output {
+            min: Math::round(min),
+            avg: Math::round(avg),
+            max: Math::round(max),
+        };
     }
 }
