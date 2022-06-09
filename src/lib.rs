@@ -1,4 +1,5 @@
 mod utils;
+mod fps;
 
 use wasm_bindgen::prelude::*;
 use fixedbitset::FixedBitSet;
@@ -94,6 +95,7 @@ impl Universe {
         self.cells = next;
     }
 
+    #[wasm_bindgen(constructor)]
     pub fn new(size: u32) -> Universe {
         let width = size;
         let height = size;

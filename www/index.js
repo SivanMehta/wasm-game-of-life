@@ -2,14 +2,17 @@ import { Universe } from "hello-wasm-pack";
 // Import the WebAssembly memory at the top of the file.
 import { memory } from "hello-wasm-pack/hello_wasm_pack_bg";
 
+import FPS from './fps';
+const fps = new FPS();
+
 const SIZE = 96;
-const CELL_SIZE = 8; // px
+const CELL_SIZE = 4; // px
 const DEAD_COLOR = "#FFFFFF";
 const ALIVE_COLOR = "#000000";
 const GRID_COLOR = '#CCCCCC';
 
 // Construct the universe, and get its width and height.
-const universe = Universe.new(SIZE);
+const universe = new Universe(SIZE);
 const width = universe.width();
 const height = universe.height();
 
@@ -51,11 +54,9 @@ function bitIsSet(n, arr) {
     return isSet;
 }
 
-function drawCells() {
+function initCells() {
     const cellsPtr = universe.cells();
     const cells = new Uint8Array(memory.buffer, cellsPtr, width * height / 8);
-
-    ctx.beginPath();
 
     for (let row = 0; row < height; row++) {
         for (let col = 0; col < width; col++) {
@@ -73,8 +74,6 @@ function drawCells() {
         );
         }
     }
-
-    ctx.stroke();
 };
 
 let animationId;
@@ -89,15 +88,16 @@ function play() {
 }
 
 function pause() {
-    drawCells();
+    initCells();
     cancelAnimationFrame(animationId);
     playPauseButton.textContent = "Play";
     animationId = null;
 }
 
 function renderLoop() {
-    drawCells();
+    initCells();
     universe.tick();
+    fps.render();
     animationId = requestAnimationFrame(renderLoop)
 };
 
@@ -113,7 +113,7 @@ canvas.addEventListener('click', event => {
     const col = Math.floor(canvasLeft / (CELL_SIZE));
     
     universe.toggle_cell(row, col);
-    drawCells();
+    initCells();
 });
 
 const playPauseButton = document.getElementById('play-pause');
@@ -141,7 +141,7 @@ resetButton.onclick = function () {
 
 function start() {
     drawGrid();
-    drawCells();
+    initCells();
     play();
 }
 
