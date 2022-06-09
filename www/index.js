@@ -6,7 +6,7 @@ import FPS from './fps';
 const fps = new FPS();
 
 const SIZE = 96;
-const CELL_SIZE = 4; // px
+const CELL_SIZE = 8; // px
 const DEAD_COLOR = "#FFFFFF";
 const ALIVE_COLOR = "#000000";
 const GRID_COLOR = '#CCCCCC';

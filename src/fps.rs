@@ -24,7 +24,7 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[wasm_bindgen]
 pub struct FPS {
-    frames: [f64;100],
+    frames: [f64; 100],
     last_frame_time_stamp: f64,
     current_frame: usize,
     enough: bool,
@@ -75,10 +75,6 @@ impl FPS {
         }
 
         let avg = sum / 100.0;
-        return Output {
-            min: Math::round(min),
-            avg: Math::round(avg),
-            max: Math::round(max),
-        };
+        return Output { min, avg, max };
     }
 }

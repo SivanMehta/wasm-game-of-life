@@ -11,7 +11,7 @@ export default class FramesPerSecond {
         const output = this.fps.render();
         if(!this.fps.enough()) return;
         const content = ["avg", "min", "max"].map(fn => {
-            const fps = output[fn]();
+            const fps = output[fn]().toPrecision(4);
             return `${fn}: ${fps}`;
         }).join('\n').trim();
 
