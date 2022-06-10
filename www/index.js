@@ -5,8 +5,8 @@ import { memory } from "hello-wasm-pack/hello_wasm_pack_bg";
 import FPS from './fps';
 const fps = new FPS();
 
-const SIZE = 150;
-const CELL_SIZE = 4; // px
+const SIZE = 250;
+const CELL_SIZE = 3; // px
 const DEAD_COLOR = "#FFFFFF";
 const ALIVE_COLOR = "#000000";
 const GRID_COLOR = '#CCCCCC';
@@ -54,32 +54,24 @@ function bitIsSet(n, arr) {
     return isSet;
 }
 
-function initCells() {
+function asMap(array) {
+    const acc = {};
+    array.forEach(value => { acc[value] = true });
+    return acc;
+}
+
+function drawCells(sameCells) {
     const cellsPtr = universe.cells();
     const cells = new Uint8Array(memory.buffer, cellsPtr, width * height / 8);
 
-    // alive cells
-    ctx.fillStyle = ALIVE_COLOR;
+    const unchangedCells = asMap(sameCells);
+
     for (let row = 0; row < height; row++) {
         for (let col = 0; col < width; col++) {
             const idx = getIndex(row, col);
-            if(!bitIsSet(idx, cells)) continue;
-            ctx.fillRect(
-                col * (CELL_SIZE) + 1,
-                row * (CELL_SIZE) + 1,
-                CELL_SIZE - 1,
-                CELL_SIZE - 1
-            );
-
-        }
-    }
-
-    // dead cells
-    ctx.fillStyle = DEAD_COLOR;
-    for (let row = 0; row < height; row++) {
-        for (let col = 0; col < width; col++) {
-            const idx = getIndex(row, col);
-            if(bitIsSet(idx, cells)) continue;
+            if(unchangedCells[idx]) continue;
+            ctx.fillStyle = bitIsSet(idx, cells) ?
+                ALIVE_COLOR : DEAD_COLOR;
             ctx.fillRect(
                 col * (CELL_SIZE) + 1,
                 row * (CELL_SIZE) + 1,
@@ -102,15 +94,15 @@ function play() {
 }
 
 function pause() {
-    initCells();
+    drawCells();
     cancelAnimationFrame(animationId);
     playPauseButton.textContent = "Play";
     animationId = null;
 }
 
 function renderLoop() {
-    initCells();
-    universe.tick();
+    const sameCells = universe.tick();
+    drawCells(sameCells);
     fps.render();
     animationId = requestAnimationFrame(renderLoop)
 };
@@ -127,7 +119,7 @@ canvas.addEventListener('click', event => {
     const col = Math.floor(canvasLeft / (CELL_SIZE));
     
     universe.toggle_cell(row, col);
-    initCells();
+    drawCells();
 });
 
 const playPauseButton = document.getElementById('play-pause');
@@ -155,7 +147,7 @@ resetButton.onclick = function () {
 
 function start() {
     drawGrid();
-    initCells();
+    drawCells([]);
     play();
 }
 

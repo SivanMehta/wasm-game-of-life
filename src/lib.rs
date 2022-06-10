@@ -63,8 +63,9 @@ impl Universe {
         return count;
     }
 
-    pub fn tick(&mut self) {
+    pub fn tick(&mut self) -> Vec<usize> {
         let mut next = self.cells.clone();
+        let mut same_cells = Vec::new();
 
         for row in 0..self.height {
             for col in 0 ..self.width  {
@@ -89,10 +90,14 @@ impl Universe {
                 };
         
                 next.set(index, next_cell);
+                if next_cell == cell {
+                    same_cells.push(index)
+                }
             }
         }
 
         self.cells = next;
+        return same_cells;
     }
 
     #[wasm_bindgen(constructor)]
@@ -123,10 +128,6 @@ impl Universe {
         self.cells.toggle(index);
     }
 
-    pub fn render(&self) -> String {
-        self.to_string()
-    }
-
     fn generate_cells(&mut self, generator: fn(usize) -> bool) {
         let capacity = (self.width() * self.width()) as usize;
         let mut new_cells = FixedBitSet::with_capacity(capacity);
@@ -146,23 +147,5 @@ impl Universe {
     pub fn reset(&mut self) {
         fn generator(_: usize) -> bool { return js_sys::Math::random() < 0.5 }
         self.generate_cells(generator);
-    }
-}
-
-use std::fmt;
-
-// affords a to_string method
-impl fmt::Display for Universe {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        // as_slice.chunks will essentially allow us to write this as a nested loop
-        for bit in 0..self.cells.len() {
-            let symbol = if self.cells.contains(bit) { '◼' } else { '◻' };
-            write!(f, "{}", symbol)?;
-            if (bit as u32) % self.width == 0 {
-                write!(f, "\n")?;
-            }
-
-        }
-        Ok(())
     }
 }
