@@ -65,7 +65,8 @@ impl Universe {
 
     pub fn tick(&mut self) -> Vec<usize> {
         let mut next = self.cells.clone();
-        let mut same_cells = Vec::new();
+        let capacity = self.capacity();
+        let mut same_cells = Vec::with_capacity(capacity);
 
         for row in 0..self.height {
             for col in 0 ..self.width  {
@@ -91,7 +92,9 @@ impl Universe {
         
                 next.set(index, next_cell);
                 if next_cell == cell {
-                    same_cells.push(index)
+                    same_cells.insert(index, 1);
+                } else {
+                    same_cells.insert(index, 0);
                 }
             }
         }
@@ -128,8 +131,12 @@ impl Universe {
         self.cells.toggle(index);
     }
 
+    fn capacity(&self) -> usize {
+        return (self.width * self.width) as usize;
+    }
+
     fn generate_cells(&mut self, generator: fn(usize) -> bool) {
-        let capacity = (self.width() * self.width()) as usize;
+        let capacity = self.capacity();
         let mut new_cells = FixedBitSet::with_capacity(capacity);
         for bit in 0..capacity {
             let value = generator(bit);

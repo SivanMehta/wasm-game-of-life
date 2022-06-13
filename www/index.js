@@ -54,22 +54,14 @@ function bitIsSet(n, arr) {
     return isSet;
 }
 
-function asMap(array) {
-    const acc = {};
-    array.forEach(value => { acc[value] = true });
-    return acc;
-}
-
-function drawCells(sameCells) {
+function drawCells(sameCells = Array(SIZE * SIZE)) {
     const cellsPtr = universe.cells();
     const cells = new Uint8Array(memory.buffer, cellsPtr, width * height / 8);
-
-    const unchangedCells = asMap(sameCells);
 
     for (let row = 0; row < height; row++) {
         for (let col = 0; col < width; col++) {
             const idx = getIndex(row, col);
-            if(unchangedCells[idx]) continue;
+            if(sameCells[idx]) continue;
             ctx.fillStyle = bitIsSet(idx, cells) ?
                 ALIVE_COLOR : DEAD_COLOR;
             ctx.fillRect(
@@ -147,7 +139,7 @@ resetButton.onclick = function () {
 
 function start() {
     drawGrid();
-    drawCells([]);
+    drawCells();
     play();
 }
 
